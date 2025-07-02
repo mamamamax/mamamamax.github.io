@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公安资金可视化分析平台 | 作品集展示</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- 基本样式与主题 --- */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #000000;
+            color: #E5E7EB; /* text-gray-200 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+
+        /* --- 品牌色与渐变 --- */
+        /* 公安蓝: #0052CC */
+        .highlight-color {
+            color: #0052CC;
+        }
+        .highlight-bg {
+            background-color: #0052CC;
+        }
+        .highlight-border {
+            border-color: #0052CC;
+        }
+        .tech-gradient {
+            background: linear-gradient(135deg, rgba(0, 82, 204, 0.5), rgba(0, 82, 204, 0.15));
+        }
+        .tech-gradient-subtle {
+            background: linear-gradient(135deg, rgba(0, 82, 204, 0.2), rgba(0, 82, 204, 0.05));
+        }
+
+        /* --- 卡片样式 --- */
+        .main-card {
+            background-color: #1a1a1a;
+            border: 1px solid #333333;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+        .mini-card {
+            background-color: #222222;
+            border: 1px solid #333333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mini-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 82, 204, 0.3);
+        }
+
+        /* --- 动画效果 --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 关系图谱样式 */
+        .graph-node {
+            background-color: #2c2c2c;
+            border: 2px solid #555;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .graph-node.core {
+            border-color: #0052CC;
+            box-shadow: 0 0 25px rgba(0, 82, 204, 0.6);
+            transform: scale(1.3);
+        }
+        .graph-line {
+            position: absolute;
+            background-color: #444;
+            height: 2px;
+            transform-origin: left center;
+            z-index: 1;
+        }
+        .graph-line::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: -4px;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 7px solid #0052CC;
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <div class="container mx-auto px-4 py-16 md:py-24 space-y-20">
+
+        <!-- 1. 主标题区域 -->
+        <header class="text-center reveal">
+            <i class="fas fa-shield-halved text-5xl highlight-color mb-4"></i>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-white leading-tight">
+                公安资金可视化分析平台
+            </h1>
+            <p class="mt-4 text-lg md:text-xl font-semibold text-gray-400">
+                Visual Analysis Platform for Public Security Funds
+            </p>
+        </header>
+
+        <!-- 2. 项目定位与设计背景 -->
+        <section class="main-card rounded-2xl p-8 md:p-12 reveal">
+            <h2 class="text-3xl font-bold text-white mb-2">项目定位与设计背景</h2>
+            <p class="text-sm font-medium highlight-color mb-6">Project Positioning & Design Background</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-4 text-gray-300 text-base">
+                    <p><strong class="text-white">核心定位：</strong>专为公安刑侦部门打造的资金流分析工具，旨在高效辅助侦破电信诈骗、洗钱等经济犯罪案件。</p>
+                    <p><strong class="text-white">核心痛点：</strong>解决传统办案模式中，“海量交易数据难以快速关联分析”的核心难题，将民警从繁杂的数据工作中解放出来。</p>
+                </div>
+                 <div class="grid grid-cols-2 gap-4">
+                    <div class="mini-card rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-user-secret text-4xl highlight-color mb-3"></i>
+                        <h3 class="font-bold text-white text-lg">刑侦民警</h3>
+                         <p class="text-sm text-gray-400 mt-1">注重效率，需快速定位资金流向与关联人员。</p>
+                    </div>
+                    <div class="mini-card rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-chart-pie text-4xl highlight-color mb-3"></i>
+                        <h3 class="font-bold text-white text-lg">数据分析员</h3>
+                        <p class="text-sm text-gray-400 mt-1">深度挖掘异常交易模式与潜在犯罪网络。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 设计策略与核心亮点 -->
+        <section class="reveal">
+            <h2 class="text-3xl font-bold text-white text-center mb-2">设计策略与核心亮点</h2>
+            <p class="text-lg text-gray-400 text-center mb-10">Design Strategy & Core Highlights</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Mini Card 1: 模块化布局 -->
+                <div class="reveal mini-card rounded-lg p-6 tech-gradient-subtle">
+                    <h3 class="text-2xl font-bold text-white mb-2">模块化布局</h3>
+                    <p class="text-xs font-semibold text-gray-400 mb-4">MODULAR LAYOUT</p>
+                    <p class="text-gray-300">适配复杂数据类型（交易流水、人员关系、渠道分布），并为未来功能扩展提供高灵活性。</p>
+                </div>
+                <!-- Mini Card 2: 可视化优先 -->
+                <div class="reveal mini-card rounded-lg p-6 tech-gradient-subtle">
+                    <h3 class="text-2xl font-bold text-white mb-2">可视化优先</h3>
+                    <p class="text-xs font-semibold text-gray-400 mb-4">VISUALIZATION FIRST</p>
+                    <p class="text-gray-300">用图表替代纯文本，如图谱、饼图，极大降低数据理解成本，让信息传达更直观。</p>
+                </div>
+                <!-- Mini Card 3: 操作高效性 -->
+                <div class="reveal mini-card rounded-lg p-6 tech-gradient-subtle">
+                    <h3 class="text-2xl font-bold text-white mb-2">操作高效性</h3>
+                    <p class="text-xs font-semibold text-gray-400 mb-4">OPERATIONAL EFFICIENCY</p>
+                    <p class="text-gray-300">简化筛选、导入、任务创建流程，大幅减少刑侦人员的操作路径，提升办案效率。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 页面拆解：案件概览页 -->
+        <section class="main-card rounded-2xl p-8 md:p-12 reveal">
+            <h2 class="text-3xl font-bold text-white mb-2">案件概览页</h2>
+            <p class="text-sm font-medium highlight-color mb-8">Cases Overview: Core Data Summary</p>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="mini-card rounded-lg p-6">
+                        <p class="text-sm text-gray-400 mb-1">交易总金额</p>
+                        <h3 class="text-4xl font-bold text-white">¥ 12,580,000</h3>
+                        <p class="text-xs font-semibold text-gray-500">Total Transaction Amount</p>
+                    </div>
+                    <div class="mini-card rounded-lg p-6">
+                        <p class="text-sm text-gray-400 mb-1">总交易次数</p>
+                        <h3 class="text-4xl font-bold text-white">3,120 <span class="text-lg">次</span></h3>
+                        <p class="text-xs font-semibold text-gray-500">Total Transactions</p>
+                    </div>
+                    <p class="text-gray-300 pt-4">通过顶部核心数据和图表，让用户<strong class="text-white">“先抓重点，再挖细节”</strong>，快速掌握案件资金全貌。</p>
+                </div>
+                <div class="lg:col-span-3 mini-card rounded-lg p-6 flex flex-col items-center justify-center tech-gradient">
+                     <h3 class="text-xl font-bold text-white mb-4 self-start">核心交易渠道分布 (Channel Distribution)</h3>
+                    <div class="w-full h-64 md:h-72 flex items-center justify-center">
+                        <canvas id="channelPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 页面拆解：模型介绍页 -->
+        <section class="reveal">
+            <h2 class="text-3xl font-bold text-white text-center mb-2">分析模型矩阵</h2>
+            <p class="text-lg text-gray-400 text-center mb-10">Analysis Model Matrix</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-network-wired text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">IP分析</h4>
+                </div>
+                <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-money-bill-transfer text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">渠道分析</h4>
+                </div>
+                 <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-calculator text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">尾数分析</h4>
+                </div>
+                 <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-users-viewfinder text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">陌生人交易</h4>
+                </div>
+                <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-clock-rotate-left text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">交易时间分析</h4>
+                </div>
+                <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-magnifying-glass-chart text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">对手分析</h4>
+                </div>
+                <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-file-invoice-dollar text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">摘要分析</h4>
+                </div>
+                 <div class="reveal mini-card rounded-lg p-5 text-center flex flex-col justify-center items-center h-36">
+                    <i class="fas fa-random text-3xl highlight-color mb-2"></i>
+                    <h4 class="font-bold text-white text-md">其它模型</h4>
+                </div>
+            </div>
+            <div class="main-card rounded-2xl p-8 md:p-12 mt-10 reveal">
+                <h3 class="text-xl font-bold text-white mb-4">交易高发时段分析 (Peak Transaction Time Analysis)</h3>
+                <div class="w-full h-80">
+                    <canvas id="transactionBarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 6. 页面拆解：线索追踪页 -->
+        <section class="main-card rounded-2xl p-8 md:p-12 reveal">
+            <h2 class="text-3xl font-bold text-white mb-2">线索追踪页</h2>
+            <p class="text-sm font-medium highlight-color mb-8">Clue Tracking: Fund Flow Graph</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-4">
+                    <p class="text-gray-300">通过<strong class="text-white">关系图谱</strong>，将复杂的资金流向可视化。节点大小代表交易金额，连线代表资金流向，清晰呈现<strong class="highlight-color">“资金汇聚点”</strong>。</p>
+                    <p class="text-gray-300">支持节点展开与收缩，便于侦查员逐层挖掘深层关系网络，高效锁定核心涉案人员。</p>
+                </div>
+                <div class="relative w-full h-80 rounded-lg tech-gradient p-4">
+                    <!-- Static representation of the relationship graph -->
+                    <div class="graph-node core" style="top: 40%; left: 45%;">
+                        <i class="fas fa-crosshairs mr-2"></i> 赵传宇
+                    </div>
+                    
+                    <div class="graph-node" style="top: 10%; left: 15%; transform: scale(0.9);">王某</div>
+                    <div class="graph-node" style="top: 70%; left: 10%; transform: scale(0.8);">李某</div>
+                    <div class="graph-node" style="top: 15%; left: 75%; transform: scale(0.85);">孙某</div>
+                    <div class="graph-node" style="top: 75%; left: 70%; transform: scale(0.95);">周某</div>
+                    <div class="graph-node" style="top: 45%; left: 5%; transform: scale(0.75);">陈某</div>
+
+                    <!-- Lines connecting nodes -->
+                    <div class="graph-line" style="width: 130px; top: 50%; left: 22%; transform: rotate(-35deg);"></div>
+                    <div class="graph-line" style="width: 140px; top: 60%; left: 20%; transform: rotate(40deg);"></div>
+                    <div class="graph-line" style="width: 100px; top: 40%; left: 60%; transform: rotate(20deg);"></div>
+                    <div class="graph-line" style="width: 100px; top: 65%; left: 60%; transform: rotate(-45deg);"></div>
+                    <div class="graph-line" style="width: 140px; top: 55%; left: 15%; transform: rotate(0deg);"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. 设计价值总结 -->
+        <section class="main-card rounded-2xl p-8 md:p-12 reveal tech-gradient">
+            <h2 class="text-3xl font-bold text-white mb-2">设计价值总结</h2>
+            <p class="text-sm font-medium highlight-color mb-6">Summary of Design Value</p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="reveal">
+                    <h3 class="text-5xl font-extrabold highlight-color">提效</h3>
+                    <p class="text-xs font-semibold text-gray-400 mt-1 mb-3">EFFICIENCY</p>
+                    <p class="text-gray-300">将数天的人工分析，压缩至数小时内完成，极大提升案件侦破效率。</p>
+                </div>
+                <div class="reveal">
+                     <h3 class="text-5xl font-extrabold highlight-color">降本</h3>
+                    <p class="text-xs font-semibold text-gray-400 mt-1 mb-3">COST REDUCTION</p>
+                    <p class="text-gray-300">降低对人力排查的依赖，节约警力资源，实现更优的资源配置。</p>
+                </div>
+                <div class="reveal">
+                    <h3 class="text-5xl font-extrabold highlight-color">赋能</h3>
+                    <p class="text-xs font-semibold text-gray-400 mt-1 mb-3">EMPOWERMENT</p>
+                    <p class="text-gray-300">通过数据可视化与智能分析，为一线刑侦工作提供强大的决策支持能力。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 text-sm mt-16 reveal">
+            <p>&copy; 2024 Visual Analysis Platform UI/UX Showcase. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // --- Animation on Scroll ---
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Apply staggered delay for elements that are part of a grid or list
+                    const delay = entry.target.closest('.grid, .flex') ? index * 100 : 0;
+                    setTimeout(() => {
+                        entry.target.classList.add('active');
+                    }, delay);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        revealElements.forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- Chart.js Configurations ---
+        Chart.defaults.color = 'rgba(229, 231, 235, 0.7)'; // text-gray-200 with opacity
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        // 1. Pie Chart: Channel Distribution
+        const pieCtx = document.getElementById('channelPieChart');
+        if (pieCtx) {
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IBPS 系统', '第三方支付', '网银转账', '其他'],
+                    datasets: [{
+                        label: '渠道占比',
+                        data: [83.53, 11.27, 4.2, 1.0],
+                        backgroundColor: [
+                            '#0052CC', // 公安蓝
+                            'rgba(0, 82, 204, 0.7)',
+                            'rgba(0, 82, 204, 0.4)',
+                            'rgba(0, 82, 204, 0.2)'
+                        ],
+                        borderColor: '#1a1a1a',
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // 2. Bar Chart: Transaction Time Analysis
+        const barCtx = document.getElementById('transactionBarChart');
+        if (barCtx) {
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['一月', '二月', '三月', '四月', '五月', '六月'],
+                    datasets: [{
+                        label: '交易次数',
+                        data: [120, 190, 300, 500, 220, 310],
+                        backgroundColor: 'rgba(0, 82, 204, 0.6)',
+                        borderColor: '#0052CC',
+                        borderWidth: 2,
+                        borderRadius: 5,
+                        hoverBackgroundColor: '#0052CC'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                            },
+                             ticks: {
+                                color: 'rgba(229, 231, 235, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(229, 231, 235, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>
